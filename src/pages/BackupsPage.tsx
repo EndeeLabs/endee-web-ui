@@ -1,6 +1,8 @@
 import { useEffect, useState, useRef } from 'react'
 import { GoPlus, GoTrash, GoSync, GoCheck, GoX } from 'react-icons/go'
 import { useAuth } from '../context/AuthContext'
+import { api } from '../api/client'
+import type { Index } from '../api/client'
 
 interface Backup {
   name: string
@@ -18,6 +20,10 @@ export default function BackupsPage() {
   const [createBackupName, setCreateBackupName] = useState('')
   const [creating, setCreating] = useState(false)
   const [createError, setCreateError] = useState<string | null>(null)
+
+  // Indexes for dropdown
+  const [indexes, setIndexes] = useState<Index[]>([])
+  const [loadingIndexes, setLoadingIndexes] = useState(false)
 
   // Restore modal state
   const [showRestoreModal, setShowRestoreModal] = useState(false)
@@ -85,11 +91,28 @@ export default function BackupsPage() {
     scrollToTop()
   }
 
+  const loadIndexes = async () => {
+    setLoadingIndexes(true)
+    try {
+      const response = await api.listIndexes()
+      if (response.success && response.data) {
+        setIndexes(response.data.indexes)
+      } else {
+        setIndexes([])
+      }
+    } catch {
+      setIndexes([])
+    } finally {
+      setLoadingIndexes(false)
+    }
+  }
+
   const openCreateModal = () => {
     setCreateIndexName('')
     setCreateBackupName('')
     setCreateError(null)
     setShowCreateModal(true)
+    loadIndexes()
   }
 
   const closeCreateModal = () => {
@@ -228,7 +251,6 @@ export default function BackupsPage() {
           <h1 className="text-2xl font-semibold text-slate-800 dark:text-slate-100">Backups</h1>
           <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">Manage your index backups</p>
         </div>
-
         {!loading && !error && backups.length !== 0 && (
           <button
             onClick={openCreateModal}
@@ -299,7 +321,7 @@ export default function BackupsPage() {
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-600">
               {backups.map((backup) => (
-                <tr key={backup.name} className="hover:bg-slate-50 dark:hover:bg-slate-600/50">
+                <tr key={backup.name} className="">
                   <td className="px-4 py-3">
                     <span className="text-sm font-medium text-slate-800 dark:text-slate-200">
                       {backup.name}
@@ -308,18 +330,18 @@ export default function BackupsPage() {
                   <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <button
+                        title='Restore'
                         onClick={() => openRestoreModal(backup.name)}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 rounded hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/30 rounded hover:bg-slate-100 dark:hover:bg-slate-900/50 transition-colors"
                       >
                         <GoSync className="w-4 h-4" />
-                        Restore
                       </button>
                       <button
+                        title='Delete'
                         onClick={() => openDeleteModal(backup.name)}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 rounded hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/30 rounded hover:bg-slate-100 dark:hover:bg-slate-900/50 transition-colors"
                       >
                         <GoTrash className="w-4 h-4" />
-                        Delete
                       </button>
                     </div>
                   </td>
@@ -348,13 +370,33 @@ export default function BackupsPage() {
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Index Name
                 </label>
-                <input
-                  type="text"
-                  value={createIndexName}
-                  onChange={(e) => setCreateIndexName(e.target.value)}
-                  placeholder="Name of the index to backup"
-                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+                {loadingIndexes ? (
+                  <div className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Loading indexes...
+                  </div>
+                ) : (
+                  <select
+                    value={createIndexName}
+                    onChange={(e) => setCreateIndexName(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">Select an index</option>
+                    {indexes.map((index) => (
+                      <option key={index.name} value={index.name}>
+                        {index.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                {!loadingIndexes && indexes.length === 0 && (
+                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                    No indexes available. Create an index first.
+                  </p>
+                )}
               </div>
 
               <div>

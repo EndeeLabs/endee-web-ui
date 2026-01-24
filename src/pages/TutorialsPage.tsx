@@ -422,30 +422,6 @@ export default function TutorialsPage() {
       }
     },
     {
-      id: 'delete-vectors-by-filter',
-      title: 'Delete Vectors by Filter',
-      description: 'Bulk delete multiple vectors matching a filter. Use this to remove all vectors that match specific criteria.',
-      endpoint: 'POST /api/v1/index/:indexName/vector/delete',
-      method: 'DELETE',
-      requiresIndex: true,
-      requiresPayload: true,
-      defaultPayload: JSON.stringify([{ year: { "$eq": 2024 } }], null, 2),
-      run: async (payload, idx) => {
-        if (!idx) return { success: false, result: 'Select an index' }
-        if (!payload) return { success: false, result: 'Payload required' }
-        try {
-          const filter = JSON.parse(payload)
-          const response = await api.deleteVectorsByFilter(idx, filter)
-          return {
-            success: response.success,
-            result: response.success ? formatResult(response.data) : response.error || 'Failed'
-          }
-        } catch (e) {
-          return { success: false, result: `Invalid JSON: ${e}` }
-        }
-      }
-    },
-    {
       id: 'delete-index',
       title: 'Delete Index',
       description: 'Permanently delete an index and all its vectors.',
@@ -517,36 +493,6 @@ export default function TutorialsPage() {
           Run each step to see the API in action.
         </p>
       </div>
-
-      {/* Index Selector */}
-      {/* <div className="bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg p-4 mb-6">
-        <div className="flex items-center gap-4">
-          <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
-            Working Index:
-          </label>
-          <select
-            value={selectedIndex}
-            onChange={(e) => setSelectedIndex(e.target.value)}
-            className="flex-1 max-w-xs px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            {indexes.length === 0 ? (
-              <option value="">No indexes - create one first</option>
-            ) : (
-              indexes.map(idx => (
-                <option key={idx.name} value={idx.name}>
-                  {idx.name} ({idx.dimension}D, {idx.sparse_dim > 0 ? 'Hybrid' : 'Dense'})
-                </option>
-              ))
-            )}
-          </select>
-          <button
-            onClick={loadIndexes}
-            className="px-3 py-2 text-sm text-blue-600 dark:text-blue-400 hover:underline"
-          >
-            Refresh
-          </button>
-        </div>
-      </div> */}
 
       {/* Tutorial Steps */}
       <div className="space-y-4">

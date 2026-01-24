@@ -13,10 +13,10 @@ export default function WelcomePage() {
           <h1 className="text-4xl font-bold text-slate-800 dark:text-slate-100">Endee</h1>
         </div>
         <p className="text-lg text-slate-600 dark:text-slate-300 mb-2">
-          Local-First Vector Database
+          High Performance Vector Databse
         </p>
         <p className="text-sm text-slate-500 dark:text-slate-400 max-w-xl mx-auto">
-          Build semantic search, RAG applications, and AI-powered features with high-performance vector similarity search.
+          Built for scale, efficiency and speed.
         </p>
       </div>
 

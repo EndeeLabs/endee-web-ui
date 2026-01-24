@@ -12,12 +12,9 @@ export default function VectorGetPage() {
   const [vectorId, setVectorId] = useState('')
   const [searching, setSearching] = useState(false)
   const [deleting, setDeleting] = useState(false)
-  const [deletingByFilter, setDeletingByFilter] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [result, setResult] = useState<VectorInfo | null>(null)
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-  const [deleteFilterInput, setDeleteFilterInput] = useState('')
 
   const isHybrid = indexInfo?.isHybrid;
 
@@ -87,34 +84,6 @@ export default function VectorGetPage() {
       setError(err instanceof Error ? err.message : 'Failed to delete vector')
     } finally {
       setDeleting(false)
-    }
-  }
-
-  const handleDeleteByFilter = async () => {
-    if (!indexName || !deleteFilterInput.trim()) return
-
-    setDeletingByFilter(true)
-    setError(null)
-    setShowDeleteConfirm(false)
-    try {
-      const filter = JSON.parse(deleteFilterInput)
-      const response = await api.deleteVectorsByFilter(indexName, filter)
-
-      if (!response.success) {
-        throw new Error(response.error || 'Failed to delete vectors')
-      }
-
-      setSuccess(`Deleted ${response.data?.deleted || 0} vector(s) matching the filter`)
-      setResult(null)
-      setDeleteFilterInput('')
-    } catch (err) {
-      if (err instanceof SyntaxError) {
-        setError('Invalid JSON filter')
-      } else {
-        setError(err instanceof Error ? err.message : 'Failed to delete vectors')
-      }
-    } finally {
-      setDeletingByFilter(false)
     }
   }
 
@@ -239,61 +208,6 @@ export default function VectorGetPage() {
           </div>
         </div>
       )}
-
-      {/* Delete by Filter Section */}
-      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 mb-6">
-        <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
-          Bulk Delete by Filter
-        </h3>
-        <p className="text-sm text-red-700 dark:text-red-300 mb-4">
-          Delete multiple vectors matching a filter. This action cannot be undone.
-        </p>
-
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-red-800 dark:text-red-200 mb-2">
-              Delete Filter
-            </label>
-            <textarea
-              value={deleteFilterInput}
-              onChange={(e) => setDeleteFilterInput(e.target.value)}
-              placeholder='e.g., {"year": {"$lt": 2020}}'
-              rows={2}
-              className="w-full px-3 py-2 border border-red-300 dark:border-red-700 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent font-mono text-sm"
-              disabled={deletingByFilter}
-            />
-          </div>
-
-          {!showDeleteConfirm ? (
-            <button
-              onClick={() => setShowDeleteConfirm(true)}
-              disabled={!deleteFilterInput.trim() || deletingByFilter}
-              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:bg-red-400 disabled:cursor-not-allowed"
-            >
-              <GoTrash className="w-4 h-4" />
-              Delete Matching Vectors
-            </button>
-          ) : (
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-red-700 dark:text-red-300">Are you sure?</span>
-              <button
-                onClick={handleDeleteByFilter}
-                disabled={deletingByFilter}
-                className="px-4 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition-colors disabled:bg-red-400"
-              >
-                {deletingByFilter ? 'Deleting...' : 'Yes, Delete'}
-              </button>
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                disabled={deletingByFilter}
-                className="px-4 py-2 bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 text-sm rounded-md hover:bg-slate-300 dark:hover:bg-slate-500 transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
 
       {/* Help Card */}
       {!result && (
