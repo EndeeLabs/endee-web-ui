@@ -1,0 +1,13 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ],
+  "compilerOptions": {
+    // ... other options
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "node" // or "bundler", as appropriate for your project
+  }
+}
