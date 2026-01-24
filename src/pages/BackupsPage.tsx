@@ -251,7 +251,6 @@ export default function BackupsPage() {
           <h1 className="text-2xl font-semibold text-slate-800 dark:text-slate-100">Backups</h1>
           <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">Manage your index backups</p>
         </div>
-
         {!loading && !error && backups.length !== 0 && (
           <button
             onClick={openCreateModal}
@@ -322,7 +321,7 @@ export default function BackupsPage() {
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-600">
               {backups.map((backup) => (
-                <tr key={backup.name} className="hover:bg-slate-50 dark:hover:bg-slate-600/50">
+                <tr key={backup.name} className="">
                   <td className="px-4 py-3">
                     <span className="text-sm font-medium text-slate-800 dark:text-slate-200">
                       {backup.name}
@@ -331,18 +330,18 @@ export default function BackupsPage() {
                   <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <button
+                        title='Restore'
                         onClick={() => openRestoreModal(backup.name)}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 rounded hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/30 rounded hover:bg-slate-100 dark:hover:bg-slate-900/50 transition-colors"
                       >
                         <GoSync className="w-4 h-4" />
-                        Restore
                       </button>
                       <button
+                        title='Delete'
                         onClick={() => openDeleteModal(backup.name)}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 rounded hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/30 rounded hover:bg-slate-100 dark:hover:bg-slate-900/50 transition-colors"
                       >
                         <GoTrash className="w-4 h-4" />
-                        Delete
                       </button>
                     </div>
                   </td>
