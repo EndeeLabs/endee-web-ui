@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { GoArrowLeft, GoTrash, GoSearch, GoPlus, GoPackage, GoArchive, GoCheck, GoX } from 'react-icons/go'
 import { api } from '../api/client'
 import type { IndexDescription } from 'endee'
+import CreateBackupModal from '../components/CreateBackupModal'
 
 export default function IndexDetailPage() {
   const { indexName } = useParams<{ indexName: string }>()
@@ -16,9 +17,6 @@ export default function IndexDetailPage() {
 
   // Backup modal state
   const [showBackupModal, setShowBackupModal] = useState(false)
-  const [backupName, setBackupName] = useState('')
-  const [creatingBackup, setCreatingBackup] = useState(false)
-  const [backupError, setBackupError] = useState<string | null>(null)
 
   // Success notification state
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
@@ -63,15 +61,11 @@ export default function IndexDetailPage() {
   }
 
   const openBackupModal = () => {
-    setBackupName('')
-    setBackupError(null)
     setShowBackupModal(true)
   }
 
   const closeBackupModal = () => {
     setShowBackupModal(false)
-    setBackupName('')
-    setBackupError(null)
   }
 
   const scrollToTop = () => {
@@ -82,32 +76,6 @@ export default function IndexDetailPage() {
     setSuccessMessage(message)
     scrollToTop()
     setTimeout(() => setSuccessMessage(null), 4000)
-  }
-
-  const handleCreateBackup = async () => {
-    if (!indexName || !backupName.trim()) return
-
-    setCreatingBackup(true)
-    setBackupError(null)
-    try {
-      const response = await fetch(`/api/v1/index/${encodeURIComponent(indexName)}/backup`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: backupName.trim() })
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.error || 'Failed to create backup')
-      }
-
-      closeBackupModal()
-      showSuccess(`Backup "${backupName.trim()}" created successfully`)
-    } catch (err) {
-      setBackupError(err instanceof Error ? err.message : 'Failed to create backup')
-    } finally {
-      setCreatingBackup(false)
-    }
   }
 
   if (loading) {
@@ -165,9 +133,6 @@ export default function IndexDetailPage() {
                 </span>
               )}
             </div>
-            {/* <p className="text-sm text-slate-600 dark:text-slate-300">
-              {indexInfo && `Created ${formatDate(indexInfo.created_at)}`}
-            </p> */}
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -317,51 +282,7 @@ export default function IndexDetailPage() {
 
       {/* Backup Modal */}
       {showBackupModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-slate-800 rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-2">Create Backup</h3>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-              Creating backup for index: <span className="font-medium text-slate-800 dark:text-slate-200">{indexName}</span>
-            </p>
-
-            {/* Error inside modal */}
-            {backupError && (
-              <div className="mb-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 px-3 py-2 rounded-md text-sm">
-                {backupError}
-              </div>
-            )}
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                Backup Name
-              </label>
-              <input
-                type="text"
-                value={backupName}
-                onChange={(e) => setBackupName(e.target.value)}
-                placeholder="Enter a name for the backup"
-                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-
-            <div className="flex gap-3 justify-end mt-6">
-              <button
-                onClick={closeBackupModal}
-                disabled={creatingBackup}
-                className="px-4 py-2 bg-slate-100 dark:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-md hover:bg-slate-200 dark:hover:bg-slate-500 transition-colors disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleCreateBackup}
-                disabled={creatingBackup || !backupName.trim()}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:bg-blue-400 disabled:cursor-not-allowed"
-              >
-                {creatingBackup ? 'Creating...' : 'Create Backup'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <CreateBackupModal closeBackupModal={closeBackupModal} indexName={indexName} showSuccess={showSuccess} />
       )}
     </div>
   )
