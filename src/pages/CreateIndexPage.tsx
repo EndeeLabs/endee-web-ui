@@ -9,7 +9,7 @@ export default function CreateIndexPage() {
   const [name, setName] = useState('')
   const [spaceType, setSpaceType] = useState<SpaceType>('cosine')
   const [dimension, setDimension] = useState('')
-  const [precision, setPrecision] = useState<string>('float16')
+  const [precision, setPrecision] = useState<string>('int8d')
 
   // Hybrid index options
   const [isHybrid, setIsHybrid] = useState(false)
