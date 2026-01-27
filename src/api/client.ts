@@ -97,7 +97,7 @@ interface RawIndexListItem {
   M: number;
   total_elements: number;
   space_type: string;
-  precision: string;
+  precision: Precision;
   created_at: number;
   dimension: number;
   sparse_dim: number;
@@ -109,7 +109,7 @@ export interface Index {
   M: number;
   total_elements: number;
   space_type: string;
-  precision: string;
+  precision: Precision;
   created_at: number;
   dimension: number;
   sparse_dim: number;
@@ -137,24 +137,6 @@ export interface VectorGetRequest {
 // Helper function to check if an index is hybrid
 export function isHybridIndex(index: Index): boolean {
   return index.sparse_dim > 0;
-}
-
-// Helper to map precision string to Precision enum
-function mapPrecision(precision: string): Precision {
-  switch (precision.toLowerCase()) {
-    case "binary":
-      return Precision.BINARY;
-    case "int8d":
-      return Precision.INT8D;
-    case "int16d":
-      return Precision.INT16D;
-    case "float16":
-      return Precision.FLOAT16;
-    case "float32":
-      return Precision.FLOAT32;
-    default:
-      return Precision.FLOAT16;
-  }
 }
 
 // Helper function to format space type to readable state
@@ -231,7 +213,7 @@ class ApiClient {
     dimension: number,
     spaceType: string,
     options?: {
-      precision?: string;
+      precision?: Precision;
       sparse_dim?: number;
       M?: number;
       ef_con?: number;
@@ -245,7 +227,7 @@ class ApiClient {
       };
 
       if (options?.precision) {
-        createOptions.precision = mapPrecision(options.precision);
+        createOptions.precision = options.precision;
       }
       if (options?.sparse_dim && options.sparse_dim > 0) {
         createOptions.sparseDimension = options.sparse_dim;
