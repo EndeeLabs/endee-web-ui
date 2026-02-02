@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { GoArrowLeft, GoChevronDown, GoChevronRight } from 'react-icons/go'
-import { api } from '../api/client'
+import { api, Precision } from '../api/client'
 import Tooltip from "../components/Tooltip"
 type SpaceType = 'cosine' | 'euclidean' | 'inner_product'
 
@@ -9,7 +9,7 @@ export default function CreateIndexPage() {
   const [name, setName] = useState('')
   const [spaceType, setSpaceType] = useState<SpaceType>('cosine')
   const [dimension, setDimension] = useState('')
-  const [precision, setPrecision] = useState<string>('float16')
+  const [precision, setPrecision] = useState<Precision>(Precision.INT8D)
 
   // Hybrid index options
   const [isHybrid, setIsHybrid] = useState(false)
@@ -182,15 +182,15 @@ export default function CreateIndexPage() {
                 <select
                   id="precision"
                   value={precision}
-                  onChange={(e) => setPrecision(e.target.value)}
+                  onChange={(e) => setPrecision(e.target.value as Precision)}
                   className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   disabled={submitting}
                 >
-                  <option value="binary">Binary</option>
-                  <option value="int8d">Int8D</option>
-                  <option value="int16d">Int16D</option>
-                  <option value="float16">Float16</option>
-                  <option value="float32">Float32</option>
+                  <option value={Precision.BINARY}>Binary</option>
+                  <option value={Precision.INT8D}>Int8D</option>
+                  <option value={Precision.INT16D}>Int16D</option>
+                  <option value={Precision.FLOAT16}>Float16</option>
+                  <option value={Precision.FLOAT32}>Float32</option>
                 </select>
               </div>
             </div>

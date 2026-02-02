@@ -208,25 +208,6 @@ export default function VectorGetPage() {
           </div>
         </div>
       )}
-
-      {/* Help Card */}
-      {!result && (
-        <div className="bg-blue-50 dark:bg-slate-600 border border-blue-200 dark:border-slate-500 rounded-lg p-4">
-          <h3 className="text-sm font-semibold text-blue-900 dark:text-slate-100 mb-2">Filter Operators</h3>
-          <div className="grid md:grid-cols-2 gap-4 text-xs text-blue-800 dark:text-slate-200 font-mono">
-            <div>
-              <p className="mb-1"><code>$eq</code> - Equal to</p>
-              <p className="mb-1"><code>$in</code> - Value in array</p>
-            </div>
-            <div>
-              <p className="mb-1"><code>$range</code> - Value in range</p>
-            </div>
-          </div>
-          <div className="mt-3 p-2 bg-blue-100 dark:bg-slate-700 rounded text-xs font-mono text-blue-900 dark:text-slate-200">
-            Example: {`{"type": {"$eq": "article"}}`}
-          </div>
-        </div>
-      )}
     </div>
   )
 }

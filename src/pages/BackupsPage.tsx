@@ -1,8 +1,8 @@
 import { useEffect, useState, useRef } from 'react'
-import { GoPlus, GoTrash, GoSync, GoCheck, GoX } from 'react-icons/go'
+import { GoPlus, GoTrash, GoSync, GoCheck, GoX, GoDownload, GoUpload } from 'react-icons/go'
 import { useAuth } from '../context/AuthContext'
-import { api } from '../api/client'
-import type { Index } from '../api/client'
+import CreateBackupModal from '../components/CreateBackupModal'
+import UploadBackupModal from '../components/UploadBackupModal'
 
 interface Backup {
   name: string
@@ -16,14 +16,9 @@ export default function BackupsPage() {
 
   // Create backup modal state
   const [showCreateModal, setShowCreateModal] = useState(false)
-  const [createIndexName, setCreateIndexName] = useState('')
-  const [createBackupName, setCreateBackupName] = useState('')
-  const [creating, setCreating] = useState(false)
-  const [createError, setCreateError] = useState<string | null>(null)
 
-  // Indexes for dropdown
-  const [indexes, setIndexes] = useState<Index[]>([])
-  const [loadingIndexes, setLoadingIndexes] = useState(false)
+  // Upload backup modal state
+  const [showUploadModal, setShowUploadModal] = useState(false)
 
   // Restore modal state
   const [showRestoreModal, setShowRestoreModal] = useState(false)
@@ -91,69 +86,22 @@ export default function BackupsPage() {
     scrollToTop()
   }
 
-  const loadIndexes = async () => {
-    setLoadingIndexes(true)
-    try {
-      const response = await api.listIndexes()
-      if (response.success && response.data) {
-        setIndexes(response.data.indexes)
-      } else {
-        setIndexes([])
-      }
-    } catch {
-      setIndexes([])
-    } finally {
-      setLoadingIndexes(false)
-    }
-  }
-
   const openCreateModal = () => {
-    setCreateIndexName('')
-    setCreateBackupName('')
-    setCreateError(null)
     setShowCreateModal(true)
-    loadIndexes()
   }
 
   const closeCreateModal = () => {
     setShowCreateModal(false)
-    setCreateIndexName('')
-    setCreateBackupName('')
-    setCreateError(null)
+    loadBackups()
   }
 
-  const handleCreateBackup = async () => {
-    if (!createIndexName.trim() || !createBackupName.trim()) return
+  const openUploadModal = () => {
+    setShowUploadModal(true)
+  }
 
-    setCreating(true)
-    setCreateError(null)
-    try {
-      const response = await fetch(`/api/v1/index/${encodeURIComponent(createIndexName.trim())}/backup`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token && { Authorization: token })
-        },
-        body: JSON.stringify({ name: createBackupName.trim() })
-      })
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          handleUnauthorized()
-          throw new Error("Authentication Token Required.")
-        }
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.error || 'Failed to create backup')
-      }
-
-      closeCreateModal()
-      showSuccess(`Backup "${createBackupName.trim()}" created successfully`)
-      loadBackups()
-    } catch (err) {
-      setCreateError(err instanceof Error ? err.message : 'Failed to create backup')
-    } finally {
-      setCreating(false)
-    }
+  const closeUploadModal = () => {
+    setShowUploadModal(false)
+    loadBackups()
   }
 
   const openRestoreModal = (backupName: string) => {
@@ -178,9 +126,10 @@ export default function BackupsPage() {
     try {
       const response = await fetch(`/api/v1/backups/${encodeURIComponent(restoreBackupName)}/restore`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json',
+        headers: {
+          'Content-Type': 'application/json',
           ...(token && { Authorization: token })
-         },
+        },
         body: JSON.stringify({ target_index_name: restoreTargetIndex.trim() })
       })
 
@@ -219,7 +168,7 @@ export default function BackupsPage() {
     try {
       const response = await fetch(`/api/v1/backups/${encodeURIComponent(deleteBackupName)}`, {
         method: 'DELETE',
-        headers: { ...(token && { Authorization: token })},
+        headers: { ...(token && { Authorization: token }) },
       })
 
       if (!response.ok) {
@@ -242,6 +191,45 @@ export default function BackupsPage() {
     }
   }
 
+  const handleDownloadBackup = async (backupName: string) => {
+    try {
+      const response = await fetch(`/api/v1/backups/${encodeURIComponent(backupName)}/download`, {
+        method: 'GET',
+        headers: { ...(token && { Authorization: token }) },
+      })
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          handleUnauthorized()
+          throw new Error("Authentication Token Required.")
+        }
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || 'Failed to download backup')
+      }
+
+      // Get the file as a blob
+      const blob = await response.blob()
+
+      // Create a temporary URL for the blob
+      const url = window.URL.createObjectURL(blob)
+
+      // Create a temporary anchor element and trigger download
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `${backupName}.tar.gz`
+      document.body.appendChild(link)
+      link.click()
+
+      // Cleanup
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+
+      showSuccess(`Downloaded backup "${backupName}"`)
+    } catch (err) {
+      showError(err instanceof Error ? err.message : 'Failed to download backup')
+    }
+  }
+
   return (
     <div>
       <div ref={pageTopRef} />
@@ -251,15 +239,24 @@ export default function BackupsPage() {
           <h1 className="text-2xl font-semibold text-slate-800 dark:text-slate-100">Backups</h1>
           <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">Manage your index backups</p>
         </div>
-        {!loading && !error && backups.length !== 0 && (
+        <div className="flex items-center gap-2">
           <button
-            onClick={openCreateModal}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            onClick={openUploadModal}
+            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-md hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors"
           >
-            <GoPlus className="w-5 h-5" />
-            Create Backup
+            <GoUpload className="w-5 h-5" />
+            Upload Backup
           </button>
-        )}
+          {!loading && !error && backups.length !== 0 && (
+            <button
+              onClick={openCreateModal}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            >
+              <GoPlus className="w-5 h-5" />
+              Create Backup
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Success Notification */}
@@ -343,6 +340,13 @@ export default function BackupsPage() {
                       >
                         <GoTrash className="w-4 h-4" />
                       </button>
+                      <button
+                        title='Download'
+                        onClick={() => handleDownloadBackup(backup.name)}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/30 rounded hover:bg-slate-100 dark:hover:bg-slate-900/50 transition-colors"
+                      >
+                        <GoDownload className="w-4 h-4" />
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -354,83 +358,7 @@ export default function BackupsPage() {
 
       {/* Create Backup Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-slate-800 rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">Create Backup</h3>
-
-            {/* Error inside modal */}
-            {createError && (
-              <div className="mb-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 px-3 py-2 rounded-md text-sm">
-                {createError}
-              </div>
-            )}
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  Index Name
-                </label>
-                {loadingIndexes ? (
-                  <div className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400 flex items-center gap-2">
-                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Loading indexes...
-                  </div>
-                ) : (
-                  <select
-                    value={createIndexName}
-                    onChange={(e) => setCreateIndexName(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="">Select an index</option>
-                    {indexes.map((index) => (
-                      <option key={index.name} value={index.name}>
-                        {index.name}
-                      </option>
-                    ))}
-                  </select>
-                )}
-                {!loadingIndexes && indexes.length === 0 && (
-                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-                    No indexes available. Create an index first.
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  Backup Name
-                </label>
-                <input
-                  type="text"
-                  value={createBackupName}
-                  onChange={(e) => setCreateBackupName(e.target.value)}
-                  placeholder="Name for the backup"
-                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-3 justify-end mt-6">
-              <button
-                onClick={closeCreateModal}
-                disabled={creating}
-                className="px-4 py-2 bg-slate-100 dark:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-md hover:bg-slate-200 dark:hover:bg-slate-500 transition-colors disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleCreateBackup}
-                disabled={creating || !createIndexName.trim() || !createBackupName.trim()}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:bg-blue-400 disabled:cursor-not-allowed"
-              >
-                {creating ? 'Creating...' : 'Create Backup'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <CreateBackupModal closeBackupModal={closeCreateModal} showSuccess={showSuccess} />
       )}
 
       {/* Restore Backup Modal */}
@@ -511,6 +439,11 @@ export default function BackupsPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Upload Backup Modal */}
+      {showUploadModal && (
+        <UploadBackupModal closeUploadModal={closeUploadModal} showSuccess={showSuccess} />
       )}
     </div>
   )
