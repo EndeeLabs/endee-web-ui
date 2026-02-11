@@ -75,7 +75,7 @@ export default function CreateBackupModal(params: CreateBackupParams) {
             }
 
             params.closeBackupModal()
-            showNotification('success', `Backup "${backupName.trim()}" created successfully for index "${backupIndexName}"`)
+            showNotification('info', `Backup "${backupName.trim()}" getting created for index "${backupIndexName}"`)
             navigate("/backups#jobs")
         } catch (err) {
             setBackupError(err instanceof Error ? err.message : 'Failed to create backup')
