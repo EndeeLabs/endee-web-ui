@@ -89,6 +89,9 @@ export default function CreateBackupModal(params: CreateBackupParams) {
                 <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-2">Create Backup</h3>
                 <div className="space-y-4">
 
+                    {backupError && (
+                        <Notification type="error" message={backupError} compact />
+                    )}
 
                     {params.indexName ? (
                         <p className="text-sm text-slate-600 dark:text-slate-400">
@@ -127,10 +130,6 @@ export default function CreateBackupModal(params: CreateBackupParams) {
                                 </p>
                             )}
                         </div>
-                    )}
-
-                    {backupError && (
-                        <Notification type="error" message={backupError} compact />
                     )}
 
                     <div>
