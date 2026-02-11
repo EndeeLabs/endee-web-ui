@@ -15,6 +15,7 @@ import BackupsPage from './pages/BackupsPage'
 import { APP_VERSION } from './config'
 import { useTheme } from './useTheme'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { NotificationProvider } from './context/NotificationContext'
 import AuthModal from './components/AuthModal'
 import { reinitializeEndee, setOnUnauthorized } from './api/client'
 
@@ -156,6 +157,7 @@ function Header() {
 function App() {
   return (
     <AuthProvider>
+      <NotificationProvider>
       <BrowserRouter>
         <div className='flex flex-row h-screen bg-background dark:bg-slate-800'>
           {/* Navigation */}
@@ -189,6 +191,7 @@ function App() {
         {/* Auth Modal */}
         <AuthModal />
       </BrowserRouter>
+      </NotificationProvider>
     </AuthProvider>
   )
 }

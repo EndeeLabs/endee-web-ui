@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { GoArrowLeft, GoChevronDown, GoChevronRight } from 'react-icons/go'
 import { api, Precision } from '../api/client'
 import Tooltip from "../components/Tooltip"
+import Notification from '../components/Notification'
 type SpaceType = 'cosine' | 'euclidean' | 'inner_product'
 
 export default function CreateIndexPage() {
@@ -307,9 +308,7 @@ export default function CreateIndexPage() {
 
             {/* Error Message */}
             {error && (
-              <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded-md text-sm">
-                {error}
-              </div>
+              <Notification type="error" message={error} />
             )}
 
             {/* Action Buttons */}

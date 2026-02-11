@@ -1,14 +1,15 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { GoArrowLeft, GoTrash, GoSearch, GoPlus, GoPackage, GoArchive, GoCheck, GoX } from 'react-icons/go'
+import { GoArrowLeft, GoTrash, GoSearch, GoPlus, GoPackage, GoArchive } from 'react-icons/go'
 import { api } from '../api/client'
 import type { IndexDescription } from 'endee'
+import { useNotification } from '../context/NotificationContext'
 import CreateBackupModal from '../components/CreateBackupModal'
+import Notification from '../components/Notification'
 
 export default function IndexDetailPage() {
   const { indexName } = useParams<{ indexName: string }>()
   const navigate = useNavigate()
-  const pageTopRef = useRef<HTMLDivElement>(null)
   const [indexInfo, setIndexInfo] = useState<IndexDescription | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -18,8 +19,7 @@ export default function IndexDetailPage() {
   // Backup modal state
   const [showBackupModal, setShowBackupModal] = useState(false)
 
-  // Success notification state
-  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const { notification, clearNotification } = useNotification()
 
   useEffect(() => {
     if (indexName) {
@@ -68,16 +68,6 @@ export default function IndexDetailPage() {
     setShowBackupModal(false)
   }
 
-  const scrollToTop = () => {
-    pageTopRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
-
-  const showSuccess = (message: string) => {
-    setSuccessMessage(message)
-    scrollToTop()
-    setTimeout(() => setSuccessMessage(null), 4000)
-  }
-
   if (loading) {
     return (
       <div className="p-6">
@@ -98,9 +88,7 @@ export default function IndexDetailPage() {
           <GoArrowLeft className="w-5 h-5" />
           Back to Indexes
         </button>
-        <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded-md">
-          {error}
-        </div>
+        <Notification type="error" message={error} />
       </div>
     )
   }
@@ -109,7 +97,6 @@ export default function IndexDetailPage() {
 
   return (
     <div>
-      <div ref={pageTopRef} />
       {/* Header */}
       <div className="mb-6">
         <button
@@ -153,17 +140,14 @@ export default function IndexDetailPage() {
         </div>
       </div>
 
-      {/* Success Notification */}
-      {successMessage && (
-        <div className="mb-4 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-300 px-4 py-3 rounded-md flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <GoCheck className="w-5 h-5" />
-            <span>{successMessage}</span>
-          </div>
-          <button onClick={() => setSuccessMessage(null)} className="hover:opacity-70">
-            <GoX className="w-5 h-5" />
-          </button>
-        </div>
+      {/* Notification */}
+      {notification && (
+        <Notification
+          type={notification.type}
+          message={notification.message}
+          onDismiss={clearNotification}
+          className="mb-4"
+        />
       )}
 
       {/* Index Stats */}
@@ -282,7 +266,7 @@ export default function IndexDetailPage() {
 
       {/* Backup Modal */}
       {showBackupModal && (
-        <CreateBackupModal closeBackupModal={closeBackupModal} indexName={indexName} showSuccess={showSuccess} />
+        <CreateBackupModal closeBackupModal={closeBackupModal} indexName={indexName} />
       )}
     </div>
   )

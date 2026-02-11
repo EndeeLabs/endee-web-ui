@@ -1,23 +1,23 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { GoPlus, GoArchive, GoCheck, GoX } from 'react-icons/go'
+import { GoPlus, GoArchive } from 'react-icons/go'
 import { api, isHybridIndex } from '../api/client'
 import type { Index } from '../api/client'
+import { useNotification } from '../context/NotificationContext'
 import CreateBackupModalFromIndex from '../components/CreateBackupModal'
+import Notification from '../components/Notification'
 
 export default function IndexesPage() {
   const [indices, setIndices] = useState<Index[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
-  const pageTopRef = useRef<HTMLDivElement>(null)
 
   // Backup modal state
   const [showBackupModal, setShowBackupModal] = useState(false)
   const [backupIndexName, setBackupIndexName] = useState('')
 
-  // Success notification state
-  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const { notification, clearNotification } = useNotification()
 
   useEffect(() => {
     loadIndices()
@@ -61,19 +61,8 @@ export default function IndexesPage() {
     setBackupIndexName('')
   }
 
-  const scrollToTop = () => {
-    pageTopRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
-
-  const showSuccess = (message: string) => {
-    setSuccessMessage(message)
-    scrollToTop()
-    setTimeout(() => setSuccessMessage(null), 4000)
-  }
-
   return (
     <div>
-      <div ref={pageTopRef} />
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
@@ -92,17 +81,14 @@ export default function IndexesPage() {
         )}
       </div>
 
-      {/* Success Notification */}
-      {successMessage && (
-        <div className="mb-4 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-300 px-4 py-3 rounded-md flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <GoCheck className="w-5 h-5" />
-            <span>{successMessage}</span>
-          </div>
-          <button onClick={() => setSuccessMessage(null)} className="hover:opacity-70">
-            <GoX className="w-5 h-5" />
-          </button>
-        </div>
+      {/* Notification */}
+      {notification && (
+        <Notification
+          type={notification.type}
+          message={notification.message}
+          onDismiss={clearNotification}
+          className="mb-4"
+        />
       )}
 
       {/* Loading State */}
@@ -114,9 +100,7 @@ export default function IndexesPage() {
 
       {/* Error State */}
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded-md">
-          {error}
-        </div>
+        <Notification type="error" message={error} className="mb-4" />
       )}
 
       {/* Empty State */}
@@ -203,7 +187,7 @@ export default function IndexesPage() {
 
       {/* Backup Modal */}
       {showBackupModal && (
-        <CreateBackupModalFromIndex closeBackupModal={closeBackupModal} indexName={backupIndexName} showSuccess={showSuccess}/>
+        <CreateBackupModalFromIndex closeBackupModal={closeBackupModal} indexName={backupIndexName} />
       )}
     </div>
   )

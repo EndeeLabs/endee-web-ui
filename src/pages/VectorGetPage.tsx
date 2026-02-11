@@ -4,6 +4,7 @@ import { GoArrowLeft, GoSearch, GoTrash } from 'react-icons/go'
 import { api } from '../api/client'
 import type { IndexDescription } from '../api/client'
 import type { VectorInfo } from 'endee'
+import Notification from '../components/Notification'
 
 export default function VectorGetPage() {
   const { indexName } = useParams<{ indexName: string }>()
@@ -113,16 +114,12 @@ export default function VectorGetPage() {
 
       {/* Success Message */}
       {success && (
-        <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-300 px-4 py-3 rounded-md mb-6">
-          {success}
-        </div>
+        <Notification type="success" message={success} onDismiss={() => setSuccess(null)} className="mb-6" />
       )}
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded-md mb-6">
-          {error}
-        </div>
+        <Notification type="error" message={error} onDismiss={() => setError(null)} className="mb-6" />
       )}
 
       {/* Get Vector Form */}

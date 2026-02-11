@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { BarLoader } from "react-spinners";
 import { useAuth } from "../context/AuthContext";
+import { useNotification } from "../context/NotificationContext";
+import Notification from "./Notification";
 
 type UploadBackupParams = {
     closeUploadModal: () => void;
-    showSuccess: (msg: string) => void;
 }
 
 export default function UploadBackupModal(params: UploadBackupParams) {
@@ -12,6 +13,7 @@ export default function UploadBackupModal(params: UploadBackupParams) {
     const [uploading, setUploading] = useState(false)
     const [uploadError, setUploadError] = useState<string | null>(null)
     const { token, handleUnauthorized } = useAuth()
+    const { showNotification } = useNotification()
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
@@ -55,7 +57,7 @@ export default function UploadBackupModal(params: UploadBackupParams) {
 
             params.closeUploadModal()
             const backupName = selectedFile.name.replace('.tar.gz', '')
-            params.showSuccess(`Backup "${backupName}" uploaded successfully`)
+            showNotification('success', `Backup "${backupName}" uploaded successfully`)
         } catch (err) {
             setUploadError(err instanceof Error ? err.message : 'Failed to upload backup')
         } finally {
@@ -69,11 +71,8 @@ export default function UploadBackupModal(params: UploadBackupParams) {
                 <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-2">Upload Backup</h3>
 
                 <div className="space-y-4">
-                    {/* Error inside modal */}
                     {uploadError && (
-                        <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 px-3 py-2 rounded-md text-sm">
-                            {uploadError}
-                        </div>
+                        <Notification type="error" message={uploadError} compact />
                     )}
 
                     <div>

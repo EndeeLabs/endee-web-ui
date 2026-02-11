@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import { BarLoader } from "react-spinners";
 import { api, type Index } from "../api/client";
+import { useAuth } from "../context/AuthContext";
+import { useNotification } from "../context/NotificationContext";
+import { useNavigate } from "react-router";
+import Notification from "./Notification";
 
 type CreateBackupParams = {
     closeBackupModal: () => void;
-    showSuccess: (msg: string) => void;
     indexName?: string;
 }
 
@@ -18,6 +21,10 @@ export default function CreateBackupModal(params: CreateBackupParams) {
     // Indexes for dropdown
     const [indexes, setIndexes] = useState<Index[]>([])
     const [loadingIndexes, setLoadingIndexes] = useState(false)
+
+    const { token, handleUnauthorized } = useAuth();
+    const { showNotification } = useNotification();
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (params.indexName) {
@@ -51,17 +58,25 @@ export default function CreateBackupModal(params: CreateBackupParams) {
         try {
             const response = await fetch(`/api/v1/index/${encodeURIComponent(backupIndexName)}/backup`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token && { Authorization: token })
+                },
                 body: JSON.stringify({ name: backupName.trim() })
             })
 
             if (!response.ok) {
+                if (response.status === 401) {
+                    handleUnauthorized()
+                    throw new Error("Authentication Token Required.")
+                }
                 const errorData = await response.json().catch(() => ({}))
                 throw new Error(errorData.error || 'Failed to create backup')
             }
 
             params.closeBackupModal()
-            params.showSuccess(`Backup "${backupName.trim()}" created successfully for index "${backupIndexName}"`)
+            showNotification('success', `Backup "${backupName.trim()}" created successfully for index "${backupIndexName}"`)
+            navigate("/backups#jobs")
         } catch (err) {
             setBackupError(err instanceof Error ? err.message : 'Failed to create backup')
         } finally {
@@ -114,11 +129,8 @@ export default function CreateBackupModal(params: CreateBackupParams) {
                         </div>
                     )}
 
-                    {/* Error inside modal */}
                     {backupError && (
-                        <div className="mb-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 px-3 py-2 rounded-md text-sm">
-                            {backupError}
-                        </div>
+                        <Notification type="error" message={backupError} compact />
                     )}
 
                     <div>
