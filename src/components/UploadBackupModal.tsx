@@ -19,8 +19,8 @@ export default function UploadBackupModal(params: UploadBackupParams) {
         const file = e.target.files?.[0]
         if (file) {
             // Validate file extension
-            if (!file.name.endsWith('.tar.gz')) {
-                setUploadError('Please select a .tar.gz file')
+            if (!file.name.endsWith('.tar')) {
+                setUploadError('Please select a .tar file')
                 setSelectedFile(null)
                 return
             }
@@ -56,7 +56,7 @@ export default function UploadBackupModal(params: UploadBackupParams) {
             }
 
             params.closeUploadModal()
-            const backupName = selectedFile.name.replace('.tar.gz', '')
+            const backupName = selectedFile.name.replace('.tar', '')
             showNotification('success', `Backup "${backupName}" uploaded successfully`)
         } catch (err) {
             setUploadError(err instanceof Error ? err.message : 'Failed to upload backup')
@@ -81,7 +81,7 @@ export default function UploadBackupModal(params: UploadBackupParams) {
                         </label>
                         <input
                             type="file"
-                            accept=".tar.gz"
+                            accept=".tar"
                             onChange={handleFileChange}
                             disabled={uploading}
                             className="w-full text-sm text-slate-500 dark:text-slate-400
@@ -102,7 +102,7 @@ export default function UploadBackupModal(params: UploadBackupParams) {
                     </div>
 
                     <div className="bg-slate-50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 px-3 py-2 rounded-md text-xs">
-                        <strong>Note:</strong> The backup file must be a .tar.gz file. If a backup with the same name already exists, the upload will fail.
+                        <strong>Note:</strong> The backup file must be a .tar file. If a backup with the same name already exists, the upload will fail.
                     </div>
                 </div>
 
