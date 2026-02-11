@@ -256,7 +256,7 @@ export default function BackupsPage() {
   }
 
   const generateDownloadKey = async (backupName: string): Promise<string> => {
-    const input = backupName + (token || '')
+    const input = backupName
     const data = new TextEncoder().encode(input)
     const hashBuffer = await crypto.subtle.digest('SHA-1', data)
     const hashArray = Array.from(new Uint8Array(hashBuffer))
