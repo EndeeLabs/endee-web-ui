@@ -455,7 +455,7 @@ export default function BackupsPage() {
 
       {/* ===== Jobs Tab ===== */}
       {activeTab === 'jobs' && (
-        <div className='bg-white rounded-sm border border-slate-200 dark:border-slate-600 p-2'>
+        <div className='bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-600 p-2'>
           {jobs.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-slate-600 dark:text-slate-300">No backup jobs yet</div>
