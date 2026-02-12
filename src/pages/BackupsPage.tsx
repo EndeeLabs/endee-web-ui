@@ -350,11 +350,11 @@ export default function BackupsPage() {
               }`}
           >
             Backups
-            {backups.length > 0 && (
+            {/* {backups.length > 0 && (
               <span className="ml-2 px-1.5 py-0.5 text-xs rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
                 {backups.length}
               </span>
-            )}
+            )} */}
           </button>
           <button
             id="jobs"
@@ -365,11 +365,11 @@ export default function BackupsPage() {
               }`}
           >
             Jobs
-            {jobs.length > 0 && (
+            {/* {jobs.length > 0 && (
               <span className="ml-2 px-1.5 py-0.5 text-xs rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
                 {jobs.length}
               </span>
-            )}
+            )} */}
           </button>
         </div>
       </div>
