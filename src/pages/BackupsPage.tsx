@@ -255,32 +255,22 @@ export default function BackupsPage() {
     }
   }
 
-  const generateDownloadKey = async (backupName: string): Promise<string> => {
-    const input = backupName
-    const data = new TextEncoder().encode(input)
-    const hashBuffer = await crypto.subtle.digest('SHA-1', data)
-    const hashArray = Array.from(new Uint8Array(hashBuffer))
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
-  }
-
-  const handleDownloadBackup = async (backupName: string) => {
-    try {
-      const key = await generateDownloadKey(backupName)
-      const downloadUrl = `/api/v1/backups/${encodeURIComponent(backupName)}/download?key=${key}`
-
-      const iframe = document.createElement('iframe')
-      iframe.style.display = 'none'
-      iframe.src = downloadUrl
-      document.body.appendChild(iframe)
-
-      setTimeout(() => {
-        document.body.removeChild(iframe)
-      }, 60000)
-
-      showNotification('success', `Downloading backup "${backupName}"`)
-    } catch (err) {
-      showNotification('error', err instanceof Error ? err.message : 'Failed to download backup')
+  const handleDownloadBackup = (backupName: string) => {
+    let downloadUrl = `/api/v1/backups/${encodeURIComponent(backupName)}/download`
+    if (token) {
+      downloadUrl += `?token=${encodeURIComponent(token)}`
     }
+
+    const iframe = document.createElement('iframe')
+    iframe.style.display = 'none'
+    iframe.src = downloadUrl
+    document.body.appendChild(iframe)
+
+    setTimeout(() => {
+      document.body.removeChild(iframe)
+    }, 60000)
+
+    showNotification('success', `Downloading backup "${backupName}"`)
   }
 
   const formatDateTime = (timestamp: number) => {
