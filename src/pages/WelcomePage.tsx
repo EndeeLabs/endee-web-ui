@@ -120,7 +120,31 @@ export default function WelcomePage() {
                   rel="noopener noreferrer"
                   className="px-4 py-2 text-sm font-medium text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 rounded-md hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors"
                 >
-                  Python SDK →
+                  Python →
+                </a>
+                <a
+                  href="http://docs.endee.io/typescript-sdk/quickstart"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 text-sm font-medium text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 rounded-md hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors"
+                >
+                  Typescript →
+                </a>
+                <a
+                  href="http://docs.endee.io/java-sdk/quickstart"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 text-sm font-medium text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 rounded-md hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors"
+                >
+                  Java →
+                </a>
+                <a
+                  href="http://docs.endee.io/go-sdk/quickstart"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 text-sm font-medium text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 rounded-md hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors"
+                >
+                  Golang →
                 </a>
               </div>
             </div>

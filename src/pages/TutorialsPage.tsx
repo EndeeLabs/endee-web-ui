@@ -398,6 +398,96 @@ export default function TutorialsPage() {
       }
     },
     {
+      id: 'download-backup',
+      title: 'Download Backup',
+      description: 'Download a backup as a .tar file. A SHA-1 key is generated from the backup name for authorization.',
+      endpoint: 'GET /api/v1/backups/:backupName/download?key=:key',
+      method: 'GET',
+      requiresPayload: true,
+      defaultPayload: JSON.stringify({ backup_name: "my_backup" }, null, 2),
+      run: async (payload) => {
+        if (!payload) return { success: false, result: 'Payload required' }
+        try {
+          const { backup_name } = JSON.parse(payload)
+          const input = backup_name
+          const data = new TextEncoder().encode(input)
+          const hashBuffer = await crypto.subtle.digest('SHA-1', data)
+          const hashArray = Array.from(new Uint8Array(hashBuffer))
+          const key = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+          const downloadUrl = `/api/v1/backups/${encodeURIComponent(backup_name)}/download?key=${key}`
+          const iframe = document.createElement('iframe')
+          iframe.style.display = 'none'
+          iframe.src = downloadUrl
+          document.body.appendChild(iframe)
+          setTimeout(() => { document.body.removeChild(iframe) }, 60000)
+          return { success: true, result: `Download started for "${backup_name}"` }
+        } catch (e) {
+          return { success: false, result: `${e}` }
+        }
+      }
+    },
+    {
+      id: 'upload-backup',
+      title: 'Upload Backup',
+      description: 'Upload a backup .tar file. This is a file upload endpoint — use the Run button to select a file. If a backup with the same name already exists, the upload will fail.',
+      endpoint: 'POST /api/v1/backups/upload',
+      method: 'POST',
+      run: async () => {
+        try {
+          const input = document.createElement('input')
+          input.type = 'file'
+          input.accept = '.tar'
+          const file = await new Promise<File>((resolve, reject) => {
+            input.onchange = () => {
+              const f = input.files?.[0]
+              if (f) resolve(f)
+              else reject(new Error('No file selected'))
+            }
+            input.click()
+          })
+          const formData = new FormData()
+          formData.append('backup', file)
+          const response = await fetch('/api/v1/backups/upload', {
+            method: 'POST',
+            headers: { ...(token && { Authorization: token }) },
+            body: formData
+          })
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}))
+            throw new Error(errorData.error || 'Failed to upload backup')
+          }
+          return { success: true, result: `Backup "${file.name}" uploaded successfully` }
+        } catch (e) {
+          return { success: false, result: `${e}` }
+        }
+      }
+    },
+    {
+      id: 'list-jobs',
+      title: 'List Backup Jobs',
+      description: 'Retrieve a list of all backup jobs, including in-progress, completed, and failed jobs.',
+      endpoint: 'GET /api/v1/backups/jobs',
+      method: 'GET',
+      run: async () => {
+        try {
+          const response = await fetch('/api/v1/backups/jobs', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token && { Authorization: token })
+            }
+          })
+          if (!response.ok) {
+            throw new Error('Failed to fetch backup jobs')
+          }
+          const data = await response.json()
+          return { success: true, result: formatResult(data) }
+        } catch (e) {
+          return { success: false, result: `${e}` }
+        }
+      }
+    },
+    {
       id: 'delete-vector',
       title: 'Delete Vector by ID',
       description: 'Remove a specific vector from an index by its ID.',

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { GoX, GoKey } from 'react-icons/go'
 import { useAuth } from '../context/AuthContext'
+import Notification from './Notification'
 
 export default function AuthModal() {
   const { showAuthModal, closeAuthModal, setToken, token } = useAuth()
@@ -60,9 +61,7 @@ export default function AuthModal() {
         </p>
 
         {error && (
-          <div className="mb-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 px-3 py-2 rounded-md text-sm">
-            {error}
-          </div>
+          <Notification type="error" message={error} compact className="mb-4" />
         )}
 
         <form onSubmit={handleSubmit}>
