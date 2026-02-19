@@ -15,13 +15,6 @@
       {
         "assets": [{ "path": "dist.zip", "label": "Frontend Distribution" }]
       }
-    ],
-    [
-      "@semantic-release/git",
-      {
-        "assets": ["CHANGELOG.md"],
-        "message": "chore(release): ${nextRelease.version}"
-      }
     ]
   ]
 }
